@@ -486,6 +486,14 @@ export class View extends ViewCommon {
         const manager = this._dialogFragment.getFragmentManager();
         if (manager) {
             this._dialogFragment.dismissAllowingStateLoss();
+            // DialogFragment.dismissAllowingStateLoss() internally calls 
+            // FragmentTransaction.commitAllowingStateLoss(); we need to force 
+            // the execution of pending transactions to mimic the behavior of 
+            // FragmentTransaction.commitNowAllowingStateLoss() as otherwise 
+            // when closing a modal dialog with root tabview inside, this transaction
+            // is still pending when the tabview pager adapter tries and fails to 
+            // commit immediately its transaction to detach tab fragments.
+            manager.executePendingTransactions();
         }
 
         this._dialogFragment = null;
